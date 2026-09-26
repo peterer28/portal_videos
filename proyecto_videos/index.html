@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UMG Videos - Iniciar sesion</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">UMG Videos</a>
+    </div>
+</nav>
+
+<div class="container" style="max-width: 460px; margin-top: 60px;">
+
+    <ul class="nav nav-tabs" id="authTabs">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabLogin" type="button">
+                Iniciar sesion
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabRegistro" type="button">
+                Registrarse
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content border border-top-0 p-4 bg-white rounded-bottom shadow-sm">
+
+        <!-- ===================== LOGIN ===================== -->
+        <div class="tab-pane fade show active" id="tabLogin">
+
+            <div id="alertLogin" class="alert d-none" role="alert"></div>
+
+            <form id="formLogin" novalidate>
+                <div class="mb-3">
+                    <label for="loginUsuario" class="form-label">Carne o correo</label>
+                    <input type="text" class="form-control" id="loginUsuario"
+                           placeholder="1890-20-11489 o juan.perez@correo.com" required>
+                </div>
+                <div class="mb-3">
+                    <label for="loginPassword" class="form-label">PIN (contrasena numerica)</label>
+                    <input type="password" inputmode="numeric" class="form-control" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100" id="btnLogin">Ingresar</button>
+            </form>
+
+            <p class="text-center text-muted mt-3 mb-0">
+                <small>Tambien puedes <a href="galeria.html">explorar el catalogo como visitante</a></small>
+            </p>
+        </div>
+
+        <!-- ===================== REGISTRO ===================== -->
+        <div class="tab-pane fade" id="tabRegistro">
+
+            <div id="alertRegistro" class="alert d-none" role="alert"></div>
+
+            <form id="formRegistro" novalidate>
+                <div class="mb-3">
+                    <label for="regCarne" class="form-label">Carne</label>
+                    <input type="text" class="form-control" id="regCarne" placeholder="1890-20-11489" required>
+                    <div class="form-text">Formato: 9999-99-99999</div>
+                </div>
+                <div class="mb-3">
+                    <label for="regNombre" class="form-label">Nombre completo</label>
+                    <input type="text" class="form-control" id="regNombre" required>
+                </div>
+                <div class="mb-3">
+                    <label for="regCorreo" class="form-label">Correo electronico</label>
+                    <input type="email" class="form-control" id="regCorreo" placeholder="usuario@dominio.com" required>
+                </div>
+                <div class="mb-3">
+                    <label for="regPassword" class="form-label">PIN (solo numeros)</label>
+                    <input type="password" inputmode="numeric" class="form-control" id="regPassword" required>
+                </div>
+                <div class="mb-3">
+                    <label for="regPasswordConfirm" class="form-label">Confirmar PIN</label>
+                    <input type="password" inputmode="numeric" class="form-control" id="regPasswordConfirm" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100" id="btnRegistro">Crear cuenta</button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script>
+
+function mostrarAlerta(idAlerta, mensaje, tipo) {
+    const box = document.getElementById(idAlerta);
+    box.className = `alert alert-${tipo}`;
+    box.textContent = mensaje;
+    box.classList.remove("d-none");
+}
+
+// Si ya hay sesion activa, mandamos directo a la galeria
+if (estaLogueado()) {
+    window.location.href = "galeria.html";
+}
+
+// -------------------- LOGIN --------------------
+document.getElementById("formLogin").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const usuario = document.getElementById("loginUsuario").value.trim();
+    const password = document.getElementById("loginPassword").value;
+
+    if (!usuario || !password) {
+        mostrarAlerta("alertLogin", "Completa carne/correo y PIN.", "warning");
+        return;
+    }
+    if (!validarPin(password)) {
+        mostrarAlerta("alertLogin", "El PIN debe ser unicamente numerico.", "warning");
+        return;
+    }
+
+    const btn = document.getElementById("btnLogin");
+    btn.disabled = true;
+    btn.textContent = "Ingresando...";
+
+    try {
+        await iniciarSesion(usuario, password);
+        const destino = sessionStorage.getItem("redirectAfterLogin");
+        sessionStorage.removeItem("redirectAfterLogin");
+        window.location.href = destino || "galeria.html";
+    } catch (error) {
+        mostrarAlerta("alertLogin", error.message, "danger");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Ingresar";
+    }
+});
+
+// -------------------- REGISTRO --------------------
+document.getElementById("formRegistro").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const carne = document.getElementById("regCarne").value.trim();
+    const nombre = document.getElementById("regNombre").value.trim();
+    const correo = document.getElementById("regCorreo").value.trim();
+    const password = document.getElementById("regPassword").value;
+    const passwordConfirm = document.getElementById("regPasswordConfirm").value;
+
+    if (!validarCarne(carne)) {
+        mostrarAlerta("alertRegistro", "El carne debe tener el formato 9999-99-99999.", "warning");
+        return;
+    }
+    if (!nombre) {
+        mostrarAlerta("alertRegistro", "Ingresa el nombre completo.", "warning");
+        return;
+    }
+    if (!validarCorreo(correo)) {
+        mostrarAlerta("alertRegistro", "Ingresa un correo valido (usuario@dominio.com).", "warning");
+        return;
+    }
+    if (!validarPin(password)) {
+        mostrarAlerta("alertRegistro", "El PIN debe ser estrictamente numerico, sin letras ni espacios.", "warning");
+        return;
+    }
+    if (password !== passwordConfirm) {
+        mostrarAlerta("alertRegistro", "Los PIN no coinciden.", "warning");
+        return;
+    }
+
+    const btn = document.getElementById("btnRegistro");
+    btn.disabled = true;
+    btn.textContent = "Creando cuenta...";
+
+    try {
+        await registrarEstudiante(carne, nombre, correo, password);
+        mostrarAlerta("alertRegistro", "Cuenta creada correctamente. Ahora puedes iniciar sesion.", "success");
+        document.getElementById("formRegistro").reset();
+
+        // Cambiamos automaticamente a la pestana de login y precargamos el carne
+        const tabLogin = new bootstrap.Tab(document.querySelector('[data-bs-target="#tabLogin"]'));
+        tabLogin.show();
+        document.getElementById("loginUsuario").value = carne;
+
+    } catch (error) {
+        // El backend deberia rechazar carne/correo duplicados; mostramos su mensaje tal cual
+        mostrarAlerta("alertRegistro", error.message, "danger");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Crear cuenta";
+    }
+});
+</script>
+
+</body>
+</html>

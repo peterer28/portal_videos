@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UMG Videos - Reproductor</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="galeria.html">UMG Videos</a>
+        <div class="d-flex align-items-center" id="authArea"></div>
+    </div>
+</nav>
+
+<div class="container mt-4" style="max-width: 900px;">
+
+    <a href="galeria.html" class="btn btn-link px-0 mb-2">&larr; Volver al catalogo</a>
+
+    <div id="contenedorVideo" class="mb-3">
+        <div class="text-center text-muted py-5">
+            <div class="spinner-border" role="status"></div>
+            <p class="mt-2">Cargando video...</p>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+            <h4 id="tituloVideo" class="mb-1">&nbsp;</h4>
+            <span class="badge bg-secondary" id="categoriaVideo"></span>
+            <span class="text-muted small ms-2" id="duracionVideo"></span>
+        </div>
+        <button id="btnLike" class="btn btn-outline-danger">&#9825; Me gusta (<span id="contadorLikes">0</span>)</button>
+    </div>
+
+    <p class="mt-3" id="descripcionVideo"></p>
+
+    <hr>
+
+    <h5>Comentarios</h5>
+
+    <div id="cajaNuevoComentario" class="mb-4">
+        <textarea id="nuevoComentario" class="form-control mb-2" rows="2"
+                  placeholder="Escribe un comentario..."></textarea>
+        <button id="btnPublicarComentario" class="btn btn-primary btn-sm">Publicar comentario</button>
+    </div>
+
+    <div id="listaComentarios">
+        <!-- comentarios se insertan aqui via JS -->
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/video.js"></script>
+
+</body>
+</html>
